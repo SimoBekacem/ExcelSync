@@ -24,16 +24,16 @@ public class ExcelDataReader {
 
 
 //            this is for getting the name of the table which is in the first cell of the first row :
-             Cell name = sheet.getRow(0).getCell(0) ;
+             String name = sheet.getRow(0).getCell(0).getStringCellValue() ;
 
 
 
 
 
 //              this is for getting the attributes for the second row :
-            ArrayList<Cell> Attributs = new ArrayList<Cell>();
+            ArrayList<String> Attributs = new ArrayList<>();
             for (Cell cell: sheet.getRow(1)) {
-                Attributs.add(cell);
+                Attributs.add(cell.getStringCellValue());
             }
 
 
@@ -45,7 +45,7 @@ public class ExcelDataReader {
             int FirstLine = sheet.getFirstRowNum()+2;
             int LastLine = sheet.getLastRowNum();
 //            this is the array of data :
-            ArrayList<Cell> values = new ArrayList<Cell>();
+            ArrayList<Object> values = new ArrayList<>();
 
 //            this for is looping on the rows :
             for (int i=FirstLine; i <= LastLine; i++) {
@@ -64,13 +64,13 @@ public class ExcelDataReader {
                 for (Cell cell : row) {
                     switch (cell.getCellType()) {
                         case STRING:
-                            values.add(cell);
+                            values.add(cell.getStringCellValue());
                             break;
                         case NUMERIC:
-                            values.add(cell);
+                            values.add(cell.getNumericCellValue());
                             break;
                         case BOOLEAN:
-                            values.add(cell);
+                            values.add(cell.getBooleanCellValue());
                             break;
                         case BLANK:
                             break;
