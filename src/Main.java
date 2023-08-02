@@ -1,9 +1,3 @@
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Scanner;
 
 
@@ -11,11 +5,8 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 //        System.out.println("Give the path of you Excel file in you computer :");
-//        String filePath = scanner.next(); // put here the path of your file exemple ( "/Users/macintoch/Downloads/Notes.xlsx")
+//        String filePath = scanner.next(); // put here the path of your file exemple ( "/Users/macintoch/Desktop/Entite_Client.xlsx")
 //        ExcelDataReader reader = new ExcelDataReader(filePath);
-//        System.out.println(reader.readDataFromExcel().name);
-//        System.out.println(reader.readDataFromExcel().attributes);
-//        System.out.println(reader.readDataFromExcel().values);
 
 
 
@@ -27,6 +18,15 @@ public class Main {
 //        String PASS = scanner.next();
         MySQLDataReader test = new MySQLDataReader("jdbc:mysql://localhost:3306/Canevas_Access","root","simo2002");
         test.PutDataFromMySQLToExcelFile();
+//        test.insertDataFromExcelToSimpleTables("/Users/macintoch/Desktop/Entite_Livraison.xlsx");
+//        test.insertDataToEntiteProjetWithForeignKeyCheck("/Users/macintoch/Desktop/Entite_Projet.xlsx");
+//        test.insertDataFromUserToSimpleTable("Entite_departement", 10101010);
+//         System.out.println(test.getNonExistingForeignKeys("Entite_Chef_de_Projet","ID","ID_chef_de_projet","/Users/macintoch/Desktop/Entite_Projet.xlsx" ));
+//    test.insertDataToEntiteLivraisonWithForeignKeyCheck("/Users/macintoch/Desktop/Entite_Livraison.xlsx");
+
+// /Users/macintoch/Desktop   Entite_departement Entite_Projet  Entite_Livraison
+
+
 
     }
 

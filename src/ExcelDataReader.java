@@ -38,9 +38,6 @@ public class ExcelDataReader {
 
 
 
-
-
-
 //            here we get the first line of the data , but the last line is nut the line were the data finished so the finish will detect by the if statement:
             int FirstLine = sheet.getFirstRowNum()+2;
             int LastLine = sheet.getLastRowNum();
