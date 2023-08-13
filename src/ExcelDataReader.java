@@ -1,91 +1,124 @@
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 
 public class ExcelDataReader {
+    public static void generateExcelFile(Table table, String directoryPath, String filename) {
+        String filePath = directoryPath + File.separator + filename;
 
-    String path ;
-    public ExcelDataReader(String path){
-        this.path = path;
-    }
+        try {
+            File file = new File(filePath);
+            File parentDir = file.getParentFile();
 
-//    this is the methode where we can take the data from the file and put it into a object name table;
-    public Table readDataFromExcel() {
-        try (
-             FileInputStream fileInputStream = new FileInputStream(path);
-             Workbook workbook = new XSSFWorkbook(fileInputStream)
-        ) {
-            Sheet sheet = workbook.getSheetAt(0); // Assuming the data is in the first sheet
-
-
-
-
-//            this is for getting the name of the table which is in the first cell of the first row :
-             String name = sheet.getRow(0).getCell(0).getStringCellValue() ;
-
-
-
-
-
-//              this is for getting the attributes for the second row :
-            ArrayList<String> Attributs = new ArrayList<>();
-            for (Cell cell: sheet.getRow(1)) {
-                Attributs.add(cell.getStringCellValue());
+            if (!parentDir.exists() && !parentDir.mkdirs()) {
+                throw new IOException("Failed to create directory: " + parentDir);
             }
 
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Table Data");
 
-
-//            here we get the first line of the data , but the last line is nut the line were the data finished so the finish will detect by the if statement:
-            int FirstLine = sheet.getFirstRowNum()+2;
-            int LastLine = sheet.getLastRowNum();
-//            this is the array of data :
-            ArrayList<Object> values = new ArrayList<>();
-
-//            this for is looping on the rows :
-            for (int i=FirstLine; i <= LastLine; i++) {
-                Row row = sheet.getRow(i);
-                Cell firstCell = row.getCell(0);
-
-
-                //  this if is for stopping the loop when we're finishing the data of the table
-                if (firstCell == null || firstCell.getCellType() == CellType.BLANK) {
-                    // If the first cell is blank, the row is likely empty, so break the loop
-                    break;
+                // Create header row
+                Row headerRow = sheet.createRow(0);
+                for (int i = 0; i < table.attributes.size(); i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(table.attributes.get(i));
                 }
 
+                // Populate data rows
+                int numRows = table.values.size() / table.attributes.size();
+                for (int i = 0; i < numRows; i++) {
+                    Row dataRow = sheet.createRow(i + 1);
+                    for (int j = 0; j < table.attributes.size(); j++) {
+                        Cell cell = dataRow.createCell(j);
+                        Object value = table.values.get(i * table.attributes.size() + j);
 
-//                this loop is looping on the cells of each row:
-                for (Cell cell : row) {
-                    switch (cell.getCellType()) {
-                        case STRING:
-                            values.add(cell.getStringCellValue());
-                            break;
-                        case NUMERIC:
-                            values.add(cell.getNumericCellValue());
-                            break;
-                        case BOOLEAN:
-                            values.add(cell.getBooleanCellValue());
-                            break;
-                        case BLANK:
-                            break;
-                        default:
-                            System.out.print("UNKNOWN TYPE" + "\t");
+                        if (value instanceof String) {
+                            cell.setCellValue((String) value);
+                        } else if (value instanceof Integer) {
+                            cell.setCellValue((Integer) value);
+                        }else if (value instanceof Boolean) {
+                            cell.setCellValue((Boolean) value);
+                        } else if (value instanceof java.sql.Date) {
+                            cell.setCellValue((java.sql.Date) value);
+                            CellStyle dateCellStyle = workbook.createCellStyle();
+                            CreationHelper createHelper = workbook.getCreationHelper();
+                            dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-MM-dd"));
+                            cell.setCellStyle(dateCellStyle);
+                        }
                     }
                 }
+
+                // Resize columns for better readability
+                for (int i = 0; i < table.attributes.size(); i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                // Write the workbook to the file
+                try (FileOutputStream fileOut = new FileOutputStream(file)) {
+                    workbook.write(fileOut);
+                    System.out.println("Excel file created successfully at: " + filePath);
+                }
             }
-
-
-
-//            we can now take all the information that we get from file and put it in the table object;
-            Table table = new Table(name, Attributs, values);
-            return table;
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+
+
+
+
+}
+    public static Table readExcelFile(String filePath) {
+        List<String> attributes = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        try (Workbook workbook = new XSSFWorkbook(new FileInputStream(filePath))) {
+            Sheet sheet = workbook.getSheetAt(0); // Assuming the data is in the first sheet
+
+            // Read header row (attributes)
+            Row headerRow = sheet.getRow(0);
+            for (Cell cell : headerRow) {
+                attributes.add(cell.getStringCellValue());
+            }
+
+            // Read data rows (values)
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row dataRow = sheet.getRow(i);
+                for (int j = 0; j < attributes.size(); j++) {
+                    Cell cell = dataRow.getCell(j);
+                    if (cell == null) {
+                        values.add(null);
+                    } else {
+                        Object value;
+                        if (cell.getCellType() == CellType.STRING) {
+                            value = cell.getStringCellValue();
+                        } else if (cell.getCellType() == CellType.NUMERIC) {
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                value = new java.sql.Date(cell.getDateCellValue().getTime());
+                            } else {
+                                value = (int) cell.getNumericCellValue();
+                            }
+                        } else if (cell.getCellType() == CellType.BOOLEAN) {
+                            value = cell.getBooleanCellValue();
+                        } else if (cell.getCellType() == CellType.BLANK) {
+                            value = null; // Handle blank cells
+                        } else {
+                            value = null; // Handle other cell types as needed
+                        }
+                        values.add(value);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new Table(attributes, values);
     }
+
+
 }

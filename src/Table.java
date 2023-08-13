@@ -1,15 +1,10 @@
-import org.apache.poi.ss.usermodel.Cell;
-
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.List;
 
 public class Table {
-    String name ;
-    ArrayList<String> attributes;
-    ArrayList<Object> values ;
+    List<String> attributes;
+    List<Object> values ;
 
-    Table(String name, ArrayList<String> attributes, ArrayList<Object> values){
-        this.name = name;
+    Table(List<String> attributes, List<Object> values){
         this.attributes = attributes;
         this.values = values;
     }
